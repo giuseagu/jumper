@@ -39,5 +39,10 @@ PLATFORM_MAX_GAP = 110
 # How many platforms to keep on screen
 PLATFORM_COUNT = 10
 
-# Probability (0-1) that a newly spawned platform is special (bounce or breakable)
-SPECIAL_PLATFORM_CHANCE = 0.20  # 10% trampolino, 10% distruttibile
+# Difficoltà: fps, velocità player, probabilità piattaforme speciali
+# Le normali sono sempre la maggioranza (>75% in tutti i livelli)
+DIFFICULTIES = {
+    'Facile':    {'fps': 45, 'player_speed': 4, 'bounce_chance': 0.18, 'breakable_chance': 0.05},
+    'Media':     {'fps': 60, 'player_speed': 5, 'bounce_chance': 0.10, 'breakable_chance': 0.10},
+    'Difficile': {'fps': 80, 'player_speed': 6, 'bounce_chance': 0.05, 'breakable_chance': 0.20},
+}

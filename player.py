@@ -7,7 +7,7 @@ from constants import (
 
 
 class Player:
-    def __init__(self, x, y):
+    def __init__(self, x, y, speed=PLAYER_SPEED):
         self.x = float(x)
         self.y = float(y)
         self.vx = 0.0
@@ -15,6 +15,7 @@ class Player:
         self.width = PLAYER_WIDTH
         self.height = PLAYER_HEIGHT
         self.highest_y = y
+        self.speed = speed
 
     def get_rect(self):
         return pygame.Rect(
@@ -27,9 +28,9 @@ class Player:
     def update(self, keys, platforms):
         # Horizontal input
         if keys[pygame.K_LEFT]:
-            self.vx = -PLAYER_SPEED
+            self.vx = -self.speed
         elif keys[pygame.K_RIGHT]:
-            self.vx = PLAYER_SPEED
+            self.vx = self.speed
         else:
             self.vx = 0
 

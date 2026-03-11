@@ -1,6 +1,7 @@
 import pygame
 import sys
-from constants import WIDTH, HEIGHT, FPS
+from constants import WIDTH, HEIGHT
+from menu import MenuScreen
 from game import Game
 
 
@@ -10,7 +11,8 @@ def main():
     surface = pygame.display.set_mode((WIDTH, HEIGHT))
     clock = pygame.time.Clock()
 
-    game = Game(surface)
+    config = MenuScreen(surface).run()
+    game = Game(surface, config)
 
     while True:
         keys = pygame.key.get_pressed()
@@ -27,7 +29,7 @@ def main():
         game.update(keys)
         game.draw()
         pygame.display.flip()
-        clock.tick(FPS)
+        clock.tick(config['fps'])
 
 
 if __name__ == "__main__":

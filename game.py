@@ -1,23 +1,27 @@
 import pygame
-from constants import WIDTH, HEIGHT
+from constants import WIDTH, HEIGHT, DIFFICULTIES
 from player import Player
-from platform import PlatformManager
+from platforms import PlatformManager
 from camera import Camera
 from renderer import Renderer
 
 
 class Game:
-    def __init__(self, surface):
+    def __init__(self, surface, config=None):
         self.surface = surface
+        self.config = config or DIFFICULTIES['Media']
         self.renderer = Renderer(surface)
         self._init_state()
 
     def _init_state(self):
         start_x = WIDTH // 2
         start_y = HEIGHT - 150
-        self.player = Player(start_x, start_y)
+        self.player = Player(start_x, start_y, speed=self.config['player_speed'])
         self.initial_y = start_y
-        self.platform_manager = PlatformManager()
+        self.platform_manager = PlatformManager(
+            bounce_chance=self.config['bounce_chance'],
+            breakable_chance=self.config['breakable_chance'],
+        )
         self.camera = Camera()
         self.score = 0
         self.game_over = False

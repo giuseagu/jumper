@@ -9,7 +9,7 @@ from constants import (
     BOUNCE_PLATFORM_COLOR, BOUNCE_PLATFORM_BORDER,
     BREAKABLE_PLATFORM_COLOR, BREAKABLE_PLATFORM_BORDER,
     JUMP_FORCE, BOUNCE_JUMP_FORCE,
-    SPECIAL_PLATFORM_CHANCE
+    DIFFICULTIES
 )
 
 
@@ -87,20 +87,21 @@ class BreakablePlatform(Platform):
             )
 
 
-def _make_platform(x, y):
-    """Crea una piattaforma casuale rispettando le probabilita di spawn."""
-    roll = random.random()
-    if roll < SPECIAL_PLATFORM_CHANCE / 2:
-        return BouncePlatform(x, y)
-    elif roll < SPECIAL_PLATFORM_CHANCE:
-        return BreakablePlatform(x, y)
-    return Platform(x, y)
-
-
 class PlatformManager:
-    def __init__(self):
+    def __init__(self, bounce_chance, breakable_chance):
+        self.bounce_chance = bounce_chance
+        self.breakable_chance = breakable_chance
         self.platforms = []
         self._generate_initial()
+
+    def _make_platform(self, x, y):
+        """Crea una piattaforma casuale in base alle probabilità della difficoltà."""
+        roll = random.random()
+        if roll < self.bounce_chance:
+            return BouncePlatform(x, y)
+        elif roll < self.bounce_chance + self.breakable_chance:
+            return BreakablePlatform(x, y)
+        return Platform(x, y)
 
     def _generate_initial(self):
         # Piattaforma di partenza: larga, al centro, nel terzo inferiore
@@ -112,7 +113,7 @@ class PlatformManager:
         for _ in range(PLATFORM_COUNT - 1):
             current_y -= random.randint(PLATFORM_MIN_GAP, PLATFORM_MAX_GAP)
             x = random.randint(0, WIDTH - PLATFORM_WIDTH)
-            self.platforms.append(_make_platform(x, current_y))
+            self.platforms.append(self._make_platform(x, current_y))
 
     def _topmost_y(self):
         return min(p.y for p in self.platforms)
@@ -122,7 +123,7 @@ class PlatformManager:
         while self._topmost_y() > camera_offset - HEIGHT:
             new_y = self._topmost_y() - random.randint(PLATFORM_MIN_GAP, PLATFORM_MAX_GAP)
             x = random.randint(0, WIDTH - PLATFORM_WIDTH)
-            self.platforms.append(_make_platform(x, new_y))
+            self.platforms.append(self._make_platform(x, new_y))
 
         # Rimuove piattaforme uscite dallo schermo o distrutte
         bottom_cutoff = camera_offset + HEIGHT + 100
