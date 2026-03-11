@@ -39,6 +39,13 @@ PLATFORM_MAX_GAP = 110
 # How many platforms to keep on screen
 PLATFORM_COUNT = 10
 
+# Colori associati a ogni difficoltà (usati in menu e game over)
+DIFF_COLORS = {
+    'Facile':    (80, 220, 120),
+    'Media':     (255, 200, 0),
+    'Difficile': (255, 80, 80),
+}
+
 # Difficoltà: fps, velocità player, probabilità piattaforme speciali
 # Le normali sono sempre la maggioranza (>75% in tutti i livelli)
 DIFFICULTIES = {

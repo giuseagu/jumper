@@ -1,13 +1,6 @@
 import pygame
 import sys
-from constants import WIDTH, HEIGHT, BG_TOP, BG_BOTTOM, DIFFICULTIES
-
-# Colori per ogni difficoltà
-DIFF_COLORS = {
-    'Facile':    (80, 220, 120),
-    'Media':     (255, 200, 0),
-    'Difficile': (255, 80, 80),
-}
+from constants import WIDTH, HEIGHT, BG_TOP, BG_BOTTOM, DIFFICULTIES, DIFF_COLORS
 
 DIFF_DESCRIPTIONS = {
     'Facile':    ['Velocità ridotta', 'Più trampolini dorati', 'Poche piattaforme fragili'],

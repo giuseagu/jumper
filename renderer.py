@@ -3,8 +3,11 @@ import random
 from constants import (
     WIDTH, HEIGHT,
     BG_TOP, BG_BOTTOM, STAR_COLOR,
-    SCORE_COLOR, GAMEOVER_COLOR
+    SCORE_COLOR, GAMEOVER_COLOR,
+    DIFFICULTIES, DIFF_COLORS
 )
+
+DIFF_NAMES = list(DIFFICULTIES.keys())
 
 
 class Star:
@@ -21,7 +24,10 @@ class Renderer:
         self.font_score = pygame.font.SysFont("monospace", 22, bold=True)
         self.font_big = pygame.font.SysFont("monospace", 42, bold=True)
         self.font_mid = pygame.font.SysFont("monospace", 24)
+        self.font_small = pygame.font.SysFont("monospace", 15)
+        self.font_diff = pygame.font.SysFont("monospace", 20, bold=True)
         self.stars = [Star() for _ in range(120)]
+        self.gameover_box_rects = []  # popolato da draw_gameover, usato da Game per i click
 
     def draw_background(self, camera_offset):
         # Gradient background
@@ -35,30 +41,58 @@ class Renderer:
         # Stars with parallax
         for star in self.stars:
             draw_y = int(star.y - camera_offset * star.layer) % (HEIGHT * 4)
-            # Wrap star vertically within visible bands
             draw_y = draw_y % HEIGHT
-            alpha = int(180 * star.layer)
-            color = (
-                min(255, STAR_COLOR[0]),
-                min(255, STAR_COLOR[1]),
-                min(255, STAR_COLOR[2])
-            )
-            pygame.draw.circle(self.surface, color, (star.x, draw_y), star.size)
+            pygame.draw.circle(self.surface, STAR_COLOR, (star.x, draw_y), star.size)
 
     def draw_score(self, score):
         text = self.font_score.render(f"Score: {score}", True, SCORE_COLOR)
         self.surface.blit(text, (12, 10))
 
-    def draw_gameover(self, score):
-        # Semi-transparent overlay
+    def draw_gameover(self, score, selected_idx):
+        # Overlay semi-trasparente
         overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
-        overlay.fill((0, 0, 0, 150))
+        overlay.fill((0, 0, 0, 170))
         self.surface.blit(overlay, (0, 0))
 
+        # Titolo e score
         title = self.font_big.render("GAME OVER", True, GAMEOVER_COLOR)
         score_text = self.font_mid.render(f"Score: {score}", True, SCORE_COLOR)
-        restart_text = self.font_mid.render("Press R to restart", True, (180, 180, 180))
+        self.surface.blit(title, (WIDTH // 2 - title.get_width() // 2, 60))
+        self.surface.blit(score_text, (WIDTH // 2 - score_text.get_width() // 2, 118))
 
-        self.surface.blit(title, (WIDTH // 2 - title.get_width() // 2, HEIGHT // 2 - 80))
-        self.surface.blit(score_text, (WIDTH // 2 - score_text.get_width() // 2, HEIGHT // 2))
-        self.surface.blit(restart_text, (WIDTH // 2 - restart_text.get_width() // 2, HEIGHT // 2 + 50))
+        # Etichetta sezione difficoltà
+        label = self.font_small.render("Scegli difficoltà e rigioca:", True, (160, 170, 200))
+        self.surface.blit(label, (WIDTH // 2 - label.get_width() // 2, 168))
+
+        # Box difficoltà
+        self.gameover_box_rects = []
+        box_h = 62
+        box_w = WIDTH - 60
+        start_y = 195
+        gap = 10
+
+        for i, name in enumerate(DIFF_NAMES):
+            box_y = start_y + i * (box_h + gap)
+            box_rect = pygame.Rect(30, box_y, box_w, box_h)
+            self.gameover_box_rects.append(box_rect)
+            is_selected = i == selected_idx
+            color = DIFF_COLORS[name]
+
+            bg_color = (40, 52, 82) if is_selected else (18, 22, 40)
+            pygame.draw.rect(self.surface, bg_color, box_rect, border_radius=8)
+            border_color = color if is_selected else (55, 65, 95)
+            pygame.draw.rect(self.surface, border_color, box_rect, width=2, border_radius=8)
+
+            label_color = color if is_selected else (110, 120, 145)
+            diff_label = self.font_diff.render(name, True, label_color)
+            self.surface.blit(diff_label, (box_rect.x + 14, box_rect.y + 10))
+
+            if is_selected:
+                hint_text = self.font_small.render("INVIO o R per riavviare", True, (190, 200, 220))
+            else:
+                hint_text = self.font_small.render("click per selezionare", True, (70, 80, 105))
+            self.surface.blit(hint_text, (box_rect.x + 14, box_rect.y + 36))
+
+        # Footer
+        footer = self.font_small.render("↑↓ seleziona   INVIO / R riavvia   click per scegliere", True, (70, 80, 110))
+        self.surface.blit(footer, (WIDTH // 2 - footer.get_width() // 2, HEIGHT - 28))

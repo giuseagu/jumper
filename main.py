@@ -29,7 +29,7 @@ def main():
         game.update(keys)
         game.draw()
         pygame.display.flip()
-        clock.tick(config['fps'])
+        clock.tick(game.config['fps'])
 
 
 if __name__ == "__main__":
