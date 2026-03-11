@@ -1,6 +1,6 @@
 import pygame
 from constants import (
-    WIDTH, GRAVITY, JUMP_FORCE, PLAYER_SPEED,
+    WIDTH, GRAVITY, PLAYER_SPEED,
     PLAYER_WIDTH, PLAYER_HEIGHT, HEAD_RADIUS,
     PLAYER_BODY, PLAYER_HEAD
 )
@@ -57,9 +57,8 @@ class Player:
             for platform in platforms:
                 p_rect = platform.get_rect()
                 if feet_rect.colliderect(p_rect):
-                    # Land on platform
                     self.y = p_rect.top
-                    self.vy = JUMP_FORCE
+                    self.vy = platform.on_land()
                     break
 
         # Track highest point (lower y = higher on screen)
