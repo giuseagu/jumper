@@ -11,14 +11,14 @@ def load_scores():
         return json.load(f)
 
 
-def save_score(score):
+def save_score(score, difficulty):
     scores = load_scores()
-    game_number = len(scores) + 1
-    scores.append({'game': game_number, 'score': score})
+    scores.append({'score': score, 'difficulty': difficulty})
     with open(SCORES_FILE, 'w') as f:
         json.dump(scores, f)
 
 
-def top_scores(n=3):
+def top_scores(difficulty, n=3):
     scores = load_scores()
-    return sorted(scores, key=lambda x: x['score'], reverse=True)[:n]
+    filtered = [s for s in scores if s.get('difficulty') == difficulty]
+    return sorted(filtered, key=lambda x: x['score'], reverse=True)[:n]

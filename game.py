@@ -50,8 +50,8 @@ class Game:
 
         if self.player.y - self.camera.offset > HEIGHT + 50:
             self.game_over = True
-            save_score(self.score)
-            self.top_scores = top_scores()
+            save_score(self.score, self._current_diff_name())
+            self.top_scores = top_scores(self._current_diff_name())
 
     def draw(self):
         self.renderer.draw_background(self.camera.offset)

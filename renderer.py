@@ -60,16 +60,18 @@ class Renderer:
         self.surface.blit(title, (WIDTH // 2 - title.get_width() // 2, 40))
         self.surface.blit(score_text, (WIDTH // 2 - score_text.get_width() // 2, 92))
 
-        # Top 3 punteggi
+        # Top 3 punteggi per difficoltà
         if top3:
-            top_label = self.font_small.render("TOP 3", True, (255, 210, 60))
+            diff_name = top3[0].get('difficulty', '')
+            diff_color = DIFF_COLORS.get(diff_name, (255, 210, 60))
+            top_label = self.font_small.render(f"TOP 3 — {diff_name}", True, diff_color)
             self.surface.blit(top_label, (WIDTH // 2 - top_label.get_width() // 2, 125))
             medals = ["1.", "2.", "3."]
+            medal_colors = [(255, 215, 0), (192, 192, 192), (205, 127, 50)]
             for i, entry in enumerate(top3):
-                medal_color = [(255, 215, 0), (192, 192, 192), (205, 127, 50)][i]
                 line = self.font_small.render(
-                    f"{medals[i]}  Partita #{entry['game']}   {entry['score']} pt",
-                    True, medal_color
+                    f"{medals[i]}  {entry['score']} pt",
+                    True, medal_colors[i]
                 )
                 self.surface.blit(line, (WIDTH // 2 - line.get_width() // 2, 143 + i * 18))
 
