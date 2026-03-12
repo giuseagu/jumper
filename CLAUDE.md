@@ -8,30 +8,45 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 # Run the game
 python3 main.py
 
-# Install dependencies
+# Install dependencies (venv already configured in .vscode/settings.json)
 pip3 install -r requirements.txt
 ```
 
 ## Architecture
 
-A vertical platformer built with pygame. The player automatically bounces on platforms and climbs upward; the goal is to get the highest score before falling off screen.
+Vertical platformer in pygame. Il player rimbalza sulle piattaforme salendo verso l'alto; l'obiettivo è raggiungere il punteggio più alto prima di cadere fuori schermo.
 
-**Flusso di avvio** (`main.py`): inizializza pygame → mostra `MenuScreen` → riceve il `config` della difficoltà scelta → crea `Game(surface, config)` → loop event/update/draw a `config['fps']` FPS.
+---
 
-**`menu.py`** — `MenuScreen`: schermata di selezione difficoltà mostrata all'avvio. Navigabile con ↑↓ + INVIO o con il mouse (hover + click). Restituisce il dict config della difficoltà scelta da `DIFFICULTIES`.
+### Flusso di avvio (`main.py`)
+`main.py` → inizializza pygame → mostra `MenuScreen` → riceve il `config` della difficoltà scelta → crea `Game(surface, config)` → loop event/update/draw a `config['fps']` FPS.
 
-**`Game`** (`game.py`): accetta `config` dict e lo propaga a `Player` (speed) e `PlatformManager` (bounce_chance, breakable_chance). Owns all state — `Player`, `PlatformManager`, `Camera`, `Renderer`. Computes score from `player.highest_y`, triggers game-over when player falls below screen bottom, handles restart (`R` key).
+---
 
-**`Player`** (`player.py`): accetta `speed=` nel costruttore (valore dal config, default `PLAYER_SPEED`). On platform collision calls `platform.on_land()` which returns the jump force. Tracks `highest_y` for scoring. Wraps horizontally across screen edges.
+### File principali
 
-**`platforms.py`**: contiene tutte le classi piattaforma e il `PlatformManager`. File rinominato da `platform.py` a `platforms.py` per evitare shadowing del modulo standard Python (causava `AttributeError` in pygame).
+**`menu.py`** — `MenuScreen`
+Schermata di selezione difficoltà all'avvio. Navigabile con ↑↓ + INVIO o mouse. Restituisce il dict config della difficoltà scelta da `DIFFICULTIES`.
 
-- **`Platform`** (verde, 80px): piattaforma base. `on_land()` restituisce `JUMP_FORCE` (-13).
-- **`BouncePlatform`** (oro, 50px): trampolino. `on_land()` restituisce `BOUNCE_JUMP_FORCE` (-24). Freccia triangolare in cima come indicatore visivo.
-- **`BreakablePlatform`** (marrone, 80px): si distrugge al primo utilizzo. `on_land()` imposta `self.broken = True`. Il `PlatformManager` la rimuove al frame successivo. Linee orizzontali sul disegno ne suggeriscono la fragilità.
-- **`PlatformManager(bounce_chance, breakable_chance)`**: accetta le probabilità dal config. Il metodo `_make_platform()` usa questi valori per decidere il tipo. Rimuove piattaforme uscite dallo schermo **o con `broken=True`**.
+**`game.py`** — `Game`
+Accetta `config` dict e lo propaga a `Player` (speed) e `PlatformManager` (bounce_chance, breakable_chance). Gestisce tutto lo stato: `Player`, `PlatformManager`, `Camera`, `Renderer`, score, game-over e restart (`R`). Al game over chiama `save_score()` e carica i top 3 per la difficoltà corrente.
 
-**`constants.py`** — `DIFFICULTIES`: dizionario con i parametri per ogni livello. È la fonte unica per bilanciamento e spawn:
+**`player.py`** — `Player`
+Accetta `speed=` dal config. Al contatto con una piattaforma chiama `platform.on_land()` che restituisce la forza di salto. Traccia `highest_y` per il calcolo del punteggio. Si teletrasporta da un lato all'altro dello schermo.
+
+**`platforms.py`** — piattaforme e `PlatformManager`
+Contiene tutte le classi piattaforma. Rinominato da `platform.py` per evitare shadowing del modulo standard Python.
+
+| Tipo | Colore | Larghezza | Comportamento |
+|---|---|---|---|
+| `Platform` | Verde | 80px | Base, `on_land()` → `JUMP_FORCE` (-13) |
+| `BouncePlatform` | Oro | 50px | Trampolino, `on_land()` → `BOUNCE_JUMP_FORCE` (-24) |
+| `BreakablePlatform` | Marrone | 80px | Si distrugge al primo uso (`broken=True`) |
+
+`PlatformManager(bounce_chance, breakable_chance)`: genera piattaforme con le probabilità dal config. Rimuove quelle uscite dallo schermo o con `broken=True`.
+
+**`constants.py`** — `DIFFICULTIES`
+Fonte unica per bilanciamento e spawn. Per modificare i parametri di gioco intervenire solo qui.
 
 | | Facile | Media | Difficile |
 |---|---|---|---|
@@ -41,34 +56,34 @@ A vertical platformer built with pygame. The player automatically bounces on pla
 | `breakable_chance` | 5% | 10% | 20% |
 | Normali (implicito) | 77% | 80% | 75% |
 
-Le piattaforme normali sono sempre la maggioranza. Per modificare il bilanciamento intervenire solo su `DIFFICULTIES` in `constants.py`.
+**`camera.py`** — `Camera`
+Singolo `offset` float. Scorre verso l'alto quando il player entra nel 40% superiore dello schermo. Non scorre mai verso il basso.
 
-**`Camera`** (`camera.py`): single `offset` float. Moves up (decreases) when player enters the upper 40% of the screen; never scrolls down.
+**`renderer.py`** — `Renderer`
+Disegna sfondo gradiente, stelle con parallax (layer 0.3/0.6/1.0), score HUD e overlay game over. La schermata game over mostra lo score attuale, il TOP 3 per la difficoltà corrente e i box per scegliere la difficoltà e riavviare.
 
-**`Renderer`** (`renderer.py`): draws gradient background, parallax stars, score HUD, and game-over overlay. Stars use a `layer` factor (0.3, 0.6, 1.0) for depth.
+**`scores.py`** — gestione punteggi locali
+Salva e legge i punteggi dal file `scores.json` (locale, non versionato su git).
+
+- `save_score(score, difficulty)` — aggiunge una entry con score e difficoltà
+- `top_scores(difficulty, n=3)` — restituisce i migliori `n` punteggi per quella difficoltà
+
+`scores.json` è in `.gitignore`: i dati rimangono solo sul dispositivo locale.
+
+---
 
 ## Git workflow
 
-Dopo ogni modifica significativa al codice (nuova funzionalità, bugfix, refactoring rilevante) esegui sempre commit e push.
+Dopo ogni modifica significativa esegui sempre commit e push.
 
-I messaggi di commit devono spiegare **cosa** è cambiato, **perché** è stato fatto e **cosa ha risolto**, seguendo questo formato:
+I messaggi di commit devono spiegare **cosa** è cambiato, **perché** e **cosa ha risolto**:
 
 ```
 <tipo>: <titolo breve e descrittivo>
 
 - Cosa è stato modificato e in quale file
-- Perché la modifica era necessaria (causa del problema o motivazione)
+- Perché la modifica era necessaria
 - Cosa ha risolto o migliorato
 ```
 
 Tipi comuni: `fix`, `feat`, `refactor`, `chore`, `docs`.
-
-Esempio:
-```
-fix: rinomina platform.py in platforms.py per evitare conflitto con stdlib
-
-- Rinominato platform.py → platforms.py
-- Il nome platform.py shadowing il modulo standard Python causava
-  AttributeError in pkg_resources al momento dell'import di pygame
-- Aggiornato l'import in game.py di conseguenza
-```
