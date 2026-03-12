@@ -48,7 +48,7 @@ class Renderer:
         text = self.font_score.render(f"Score: {score}", True, SCORE_COLOR)
         self.surface.blit(text, (12, 10))
 
-    def draw_gameover(self, score, selected_idx):
+    def draw_gameover(self, score, selected_idx, top3=None):
         # Overlay semi-trasparente
         overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 170))
@@ -57,19 +57,32 @@ class Renderer:
         # Titolo e score
         title = self.font_big.render("GAME OVER", True, GAMEOVER_COLOR)
         score_text = self.font_mid.render(f"Score: {score}", True, SCORE_COLOR)
-        self.surface.blit(title, (WIDTH // 2 - title.get_width() // 2, 60))
-        self.surface.blit(score_text, (WIDTH // 2 - score_text.get_width() // 2, 118))
+        self.surface.blit(title, (WIDTH // 2 - title.get_width() // 2, 40))
+        self.surface.blit(score_text, (WIDTH // 2 - score_text.get_width() // 2, 92))
+
+        # Top 3 punteggi
+        if top3:
+            top_label = self.font_small.render("TOP 3", True, (255, 210, 60))
+            self.surface.blit(top_label, (WIDTH // 2 - top_label.get_width() // 2, 125))
+            medals = ["1.", "2.", "3."]
+            for i, entry in enumerate(top3):
+                medal_color = [(255, 215, 0), (192, 192, 192), (205, 127, 50)][i]
+                line = self.font_small.render(
+                    f"{medals[i]}  Partita #{entry['game']}   {entry['score']} pt",
+                    True, medal_color
+                )
+                self.surface.blit(line, (WIDTH // 2 - line.get_width() // 2, 143 + i * 18))
 
         # Etichetta sezione difficoltà
         label = self.font_small.render("Scegli difficoltà e rigioca:", True, (160, 170, 200))
-        self.surface.blit(label, (WIDTH // 2 - label.get_width() // 2, 168))
+        self.surface.blit(label, (WIDTH // 2 - label.get_width() // 2, 205))
 
         # Box difficoltà
         self.gameover_box_rects = []
-        box_h = 62
+        box_h = 58
         box_w = WIDTH - 60
-        start_y = 195
-        gap = 10
+        start_y = 225
+        gap = 8
 
         for i, name in enumerate(DIFF_NAMES):
             box_y = start_y + i * (box_h + gap)

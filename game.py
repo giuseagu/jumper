@@ -4,6 +4,7 @@ from player import Player
 from platforms import PlatformManager
 from camera import Camera
 from renderer import Renderer
+from scores import save_score, top_scores
 
 DIFF_NAMES = list(DIFFICULTIES.keys())
 
@@ -34,6 +35,7 @@ class Game:
         self.camera = Camera()
         self.score = 0
         self.game_over = False
+        self.top_scores = []
 
     def update(self, keys):
         if self.game_over:
@@ -48,6 +50,8 @@ class Game:
 
         if self.player.y - self.camera.offset > HEIGHT + 50:
             self.game_over = True
+            save_score(self.score)
+            self.top_scores = top_scores()
 
     def draw(self):
         self.renderer.draw_background(self.camera.offset)
@@ -56,7 +60,7 @@ class Game:
         self.renderer.draw_score(self.score)
 
         if self.game_over:
-            self.renderer.draw_gameover(self.score, self.gameover_selected)
+            self.renderer.draw_gameover(self.score, self.gameover_selected, self.top_scores)
 
     def _restart_with_selected(self):
         self.config = DIFFICULTIES[DIFF_NAMES[self.gameover_selected]]
